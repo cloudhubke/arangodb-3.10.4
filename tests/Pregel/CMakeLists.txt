@@ -23,9 +23,7 @@ add_executable(arangodbtests_pregel
 
 target_link_libraries(arangodbtests_pregel
     gtest_main
-    arango_tests_pregel
-    arango_crashhandler_light
-    arango_assertions)
+    arango_tests_pregel)
 
 add_test(NAME pregel
          COMMAND arangodbtests_pregel)
