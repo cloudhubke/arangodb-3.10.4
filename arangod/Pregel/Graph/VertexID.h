@@ -57,14 +57,13 @@ template<>
 struct hash<arangodb::pregel::VertexID> {
   std::size_t operator()(const arangodb::pregel::VertexID& k) const noexcept {
     using std::hash;
-    using std::size_t;
     using std::string;
 
     // Compute individual hash values for first,
     // second and third and combine them using XOR
     // and bit shifting:
     size_t h1 = std::hash<std::string>()(k.key);
-    size_t h2 = std::hash<size_t>()(k.shard);
+    size_t h2 = std::hash<arangodb::pregel::PregelShard>()(k.shard);
     return h2 ^ (h1 << 1);
   }
 };
