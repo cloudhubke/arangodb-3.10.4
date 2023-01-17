@@ -18,7 +18,8 @@
 ///
 /// Copyright holder is ArangoDB GmbH, Cologne, Germany
 ///
-/// @author Tobias Gödderz
+/// @author Markus Pfeiffer
+/// @author Julia Volmer
 ////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -27,8 +28,8 @@
 namespace arangodb::pregel {
 
 struct VertexID {
-  std::string key;    // std::string 24
-  PregelShard shard;  // uint16_t
+  std::string key;
+  PregelShard shard;
 
   VertexID() : shard(InvalidPregelShard) {}
   VertexID(PregelShard s, std::string k) : key(std::move(k)), shard(s) {}
