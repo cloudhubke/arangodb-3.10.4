@@ -129,7 +129,7 @@ class VertexComputation : public VertexContext<V, E, M> {
   }
 
   void sendMessage(VertexID const& pid, M const& data) {
-    _cache->appendMessage(pid.shard, pid.key, data);
+    _cache->appendMessage(pid.shard, std::string_view(pid.key), data);
   }
 
   /// Send message along outgoing edges to all reachable neighbours
