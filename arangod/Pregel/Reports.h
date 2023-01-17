@@ -61,7 +61,7 @@ struct ReportBuilder {
     using base_type = std::decay_t<T>;
     if constexpr (std::is_same_v<VPackSlice, base_type>) {
       builder.add(value);
-    } else if constexpr (std::is_same_v<PregelID, base_type>) {
+    } else if constexpr (std::is_same_v<VertexID, base_type>) {
       VPackObjectBuilder ob(&builder);
       builder.add("key", VPackValue(value.key));
       builder.add("shard", VPackValue(value.shard));
