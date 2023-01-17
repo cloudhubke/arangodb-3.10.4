@@ -37,7 +37,7 @@ TEST(PregelShard, construction) {
   ASSERT_EQ(s, InvalidPregelShard);
   ASSERT_FALSE(s.isValid());
 
-  auto t = PregelShard(static_cast<uint16_t>(5));
+  auto t = PregelShard(5);
   ASSERT_NE(t, InvalidPregelShard);
   ASSERT_TRUE(t.isValid());
 };
