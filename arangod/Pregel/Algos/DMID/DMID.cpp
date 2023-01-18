@@ -332,11 +332,9 @@ struct DMIDComputation
        */
       bool hasEdgeToSender = false;
 
-      for (auto edges = getEdges(); edges.hasMore(); ++edges) {
-        Edge<float>* edge = *edges;
-
-        if (edge->targetShard() == senderID.shard &&
-            edge->toKey() == senderID.key) {
+      for (auto&& edge : getEdges()) {
+        if (edge.targetShard() == senderID.pregelShard() &&
+            edge.toKey() == senderID.key()) {
           hasEdgeToSender = true;
           /**
            * Has this vertex more influence on the sender than the

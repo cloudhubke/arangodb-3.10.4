@@ -43,6 +43,9 @@ struct DMIDMessageFormat : public MessageFormat<DMIDMessage> {
         VertexID(PregelShard((*array).getUInt()), (*(++array)).copyString());
     message.leaderId =
         VertexID(PregelShard((*array).getUInt()), (*(++array)).copyString());
+    /* TODO: This probably contains a bug because array is not incremented
+     * often enough...
+    */
     message.weight = (*(++array)).getNumber<float>();
   }
   void addValue(VPackBuilder& arrayBuilder,

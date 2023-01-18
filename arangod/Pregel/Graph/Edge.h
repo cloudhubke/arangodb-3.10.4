@@ -41,19 +41,16 @@ class Edge {
   friend class GraphStore;
 
   // these members are initialized by the GraphStore
-  char* _toKey;              // uint64_t
-  uint16_t _toKeyLength;     // uint16_t
-  PregelShard _targetShard;  // uint16_t
-
+  VertexID _to;
   E _data;
 
  public:
   [[nodiscard]] std::string_view toKey() const {
-    return {_toKey, _toKeyLength};
+    return _to.key();
   }
   E& data() noexcept { return _data; }
   [[nodiscard]] PregelShard targetShard() const noexcept {
-    return _targetShard;
+    return _to.pregelShard();
   }
 };
 
