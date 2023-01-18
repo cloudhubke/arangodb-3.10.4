@@ -44,11 +44,7 @@ class Vertex {
   V _data;  // variable byte size
 
  public:
-  Vertex() noexcept
-      : _key(),
-        _edges(),
-        _active(true),
-        _shard() {
+  Vertex() noexcept : _key(), _shard(), _edges(), _active(true) {
     TRI_ASSERT(keyLength() == 0);
     TRI_ASSERT(active());
   }
@@ -67,14 +63,12 @@ class Vertex {
   size_t addEdge(Edge<E>&& edge) noexcept {
     // must only be called during initial vertex creation
     TRI_ASSERT(active());
-    _edges.emplace(edge);
+    _edges.emplace_back(edge);
     return _edges.size();
   }
 
   // returns the number of associated edges
-  [[nodiscard]] size_t getEdgeCount() const noexcept {
-    return _edges.size();
-  }
+  [[nodiscard]] size_t getEdgeCount() const noexcept { return _edges.size(); }
 
   void setActive(bool bb) noexcept {
     _active = bb;
@@ -97,15 +91,11 @@ class Vertex {
 
   [[nodiscard]] uint16_t keyLength() const noexcept { return _key.length(); }
 
-  [[nodiscard]] std::string_view key() const {
-    return std::string_view(_key);
-  }
+  [[nodiscard]] std::string_view key() const { return std::string_view(_key); }
   V const& data() const& { return _data; }
   V& data() & { return _data; }
 
-  [[nodiscard]] VertexID pregelId() const {
-    return VertexID{_shard, _key};
-  }
+  [[nodiscard]] VertexID pregelId() const { return VertexID{_shard, _key}; }
 };
 
 }  // namespace arangodb::pregel

@@ -36,7 +36,7 @@ class GraphStore;
 // header entry for the edge file
 template<typename E>
 // cppcheck-suppress noConstructor
-class Edge {
+struct Edge {
   template<typename V, typename E2>
   friend class GraphStore;
 
@@ -44,7 +44,6 @@ class Edge {
   VertexID _to;
   E _data;
 
- public:
   [[nodiscard]] std::string_view toKey() const {
     return _to.key();
   }

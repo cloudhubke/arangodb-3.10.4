@@ -116,15 +116,14 @@ std::vector<ShardID> const& WorkerConfig::edgeCollectionRestrictions(
   return ::emptyEdgeCollectionRestrictions;
 }
 
-VertexID WorkerConfig::documentIdToPregel(std::string const& documentID) const {
+VertexID WorkerConfig::documentIdToPregel(std::string_view documentID) const {
   size_t pos = documentID.find("/");
   if (pos == std::string::npos) {
     THROW_ARANGO_EXCEPTION_MESSAGE(TRI_ERROR_FORBIDDEN,
                                    "not a valid document id");
   }
-  std::string_view docRef(documentID);
-  std::string_view collPart = docRef.substr(0, pos);
-  std::string_view keyPart = docRef.substr(pos + 1);
+  std::string_view collPart = documentID.substr(0, pos);
+  std::string_view keyPart = documentID.substr(pos + 1);
 
   ShardID responsibleShard;
 
@@ -135,3 +134,4 @@ VertexID WorkerConfig::documentIdToPregel(std::string const& documentID) const {
   PregelShard source = this->shardId(responsibleShard);
   return VertexID(source, std::string(keyPart));
 }
+ 

@@ -472,80 +472,7 @@ void GraphStore<V, E>::loadEdges(
     uint64_t numVertices, traverser::EdgeCollectionInfo& info) {
   auto cursor = info.getEdges(documentID);
 
-  TypedBuffer<Edge<E>>* edgeBuff = edges.empty() ? nullptr : edges.back().get();
-  TypedBuffer<char>* keyBuff =
-      edgeKeys.empty() ? nullptr : edgeKeys.back().get();
-
-  auto allocateSpace = [&](size_t keyLen) {
-    if (edgeBuff == nullptr || edgeBuff->remainingCapacity() == 0) {
-      edges.push_back(
-          createBuffer<Edge<E>>(_feature, *_config, edgeSegmentSize()));
-      _feature.metrics()->pregelMemoryUsedForGraph->fetch_add(
-          edgeSegmentSize());
-      edgeBuff = edges.back().get();
-    }
-    if (keyBuff == nullptr || keyLen > keyBuff->remainingCapacity()) {
-      TRI_ASSERT(keyLen < ::maxStringChunkSize);
-      auto const chunkSize =
-          ::stringChunkSize(edgeKeys.size(), numVertices, false);
-      edgeKeys.push_back(createBuffer<char>(_feature, *_config, chunkSize));
-      _feature.metrics()->pregelMemoryUsedForGraph->fetch_add(chunkSize);
-      keyBuff = edgeKeys.back().get();
-    }
-  };
-
-  bool const isCluster = ServerState::instance()->isRunningInCluster();
-  auto& ci = trx.vocbase().server().getFeature<ClusterFeature>().clusterInfo();
-
-  std::string collectionName;  // will be reused
   size_t addedEdges = 0;
-  auto buildEdge = [&](Edge<E>* edge, std::string_view toValue) {
-    ++addedEdges;
-    if (vertex.addEdge(edge) == vertex.maxEdgeCount()) {
-      THROW_ARANGO_EXCEPTION_MESSAGE(TRI_ERROR_INTERNAL,
-                                     "too many edges for vertex");
-    }
-    ++_observables.edgesLoaded;
-    _observables.memoryBytesUsed += sizeof(Edge<E>);
-
-    std::size_t pos = toValue.find('/');
-    collectionName = std::string(toValue.substr(0, pos));
-    std::string_view key = toValue.substr(pos + 1);
-    edge->_toKey = keyBuff->end();
-    edge->_toKeyLength = static_cast<uint16_t>(key.size());
-    TRI_ASSERT(key.size() <= std::numeric_limits<uint16_t>::max());
-    keyBuff->advance(key.size());
-    // actually copy in the key
-    memcpy(edge->_toKey, key.data(), key.size());
-    _observables.memoryBytesUsed += key.size();
-
-    if (isCluster) {
-      // resolve the shard of the target vertex.
-      ShardID responsibleShard;
-
-      auto res =
-          Utils::resolveShard(ci, _config, collectionName,
-                              StaticStrings::KeyString, key, responsibleShard);
-      if (res != TRI_ERROR_NO_ERROR) {
-        LOG_PREGEL("b80ba", ERR) << "Could not resolve target shard of edge '"
-                                 << key << "', collection: " << collectionName
-                                 << ": " << TRI_errno_string(res);
-        return res;
-      }
-
-      edge->_targetShard = (PregelShard)_config->shardId(responsibleShard);
-    } else {
-      // single server is much simpler
-      edge->_targetShard = (PregelShard)_config->shardId(collectionName);
-    }
-
-    if (edge->_targetShard == InvalidPregelShard) {
-      LOG_PREGEL("1f413", ERR) << "Could not resolve target shard of edge";
-      return TRI_ERROR_CLUSTER_BACKEND_UNAVAILABLE;
-    }
-    return TRI_ERROR_NO_ERROR;
-  };
-
   if (_graphFormat->estimatedEdgeSize() == 0) {
     // use covering index optimization
     while (cursor->nextCovering(
@@ -553,12 +480,12 @@ void GraphStore<V, E>::loadEdges(
             IndexIteratorCoveringData& covering) {
           TRI_ASSERT(covering.isArray());
 
+          ++_observables.edgesLoaded;
           std::string_view toValue =
               covering.at(info.coveringPosition()).stringView();
-          size_t space = toValue.size();
-          allocateSpace(space);
-          Edge<E>* edge = edgeBuff->appendElement();
-          buildEdge(edge, toValue);
+          auto toVertexID = _config->documentIdToPregel(toValue);
+
+          vertex.addEdge(Edge<E>{._to = toVertexID, ._data = {}});
           return true;
         },
         1000)) { /* continue loading */
@@ -569,16 +496,15 @@ void GraphStore<V, E>::loadEdges(
         [&](LocalDocumentId const& /*token*/, VPackSlice slice) {
           slice = slice.resolveExternal();
 
+          ++_observables.edgesLoaded;
           std::string_view toValue =
               transaction::helpers::extractToFromDocument(slice).stringView();
-          allocateSpace(toValue.size());
-          Edge<E>* edge = edgeBuff->appendElement();
-          auto res = buildEdge(edge, toValue);
-          if (res == TRI_ERROR_NO_ERROR) {
-            _graphFormat->copyEdgeData(
-                *trx.transactionContext()->getVPackOptions(), slice,
-                edge->data());
-          }
+
+          auto toVertexID = _config->documentIdToPregel(toValue);
+          auto edge = Edge<E>{._to = toVertexID};
+          _graphFormat->copyEdgeData(
+            *trx.transactionContext()->getVPackOptions(), slice,
+            edge.data());
           return true;
         },
         1000)) { /* continue loading */

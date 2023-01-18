@@ -162,10 +162,8 @@ struct DMIDComputation
    */
   void superstep0(MessageIterator<DMIDMessage> const& messages) {
     DMIDMessage message(pregelId(), 0);
-    RangeIterator<Edge<float>> edges = getEdges();
-    for (; edges.hasMore(); ++edges) {
-      Edge<float>* edge = *edges;
-      message.weight = edge->data();  // edge weight
+    for (auto&& edge : getEdges()) {
+      message.weight = edge.data();
       sendMessage(edge, message);
     }
   }
