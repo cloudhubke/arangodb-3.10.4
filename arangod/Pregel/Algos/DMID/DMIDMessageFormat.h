@@ -39,22 +39,22 @@ struct DMIDMessageFormat : public MessageFormat<DMIDMessage> {
   DMIDMessageFormat() {}
   void unwrapValue(VPackSlice s, DMIDMessage& message) const override {
     VPackArrayIterator array(s);
-    message.senderId.shard = (PregelShard)((*array).getUInt());
-    message.senderId.key = (*(++array)).copyString();
-    message.leaderId.shard = (PregelShard)(*array).getUInt();
-    message.leaderId.key = (*(++array)).copyString();
+    message.senderId =
+        VertexID(PregelShard((*array).getUInt()), (*(++array)).copyString());
+    message.leaderId =
+        VertexID(PregelShard((*array).getUInt()), (*(++array)).copyString());
     message.weight = (*(++array)).getNumber<float>();
   }
   void addValue(VPackBuilder& arrayBuilder,
                 DMIDMessage const& message) const override {
     arrayBuilder.openArray();
-    arrayBuilder.add(VPackValue(message.senderId.shard));
-    arrayBuilder.add(VPackValuePair(message.senderId.key.data(),
-                                    message.senderId.key.size(),
+    arrayBuilder.add(VPackValue(message.senderId.pregelShard()));
+    arrayBuilder.add(VPackValuePair(message.senderId.key().data(),
+                                    message.senderId.key().size(),
                                     VPackValueType::String));
-    arrayBuilder.add(VPackValue(message.leaderId.shard));
-    arrayBuilder.add(VPackValuePair(message.leaderId.key.data(),
-                                    message.leaderId.key.size(),
+    arrayBuilder.add(VPackValue(message.leaderId.pregelShard()));
+    arrayBuilder.add(VPackValuePair(message.leaderId.key().data(),
+                                    message.leaderId.key().size(),
                                     VPackValueType::String));
     arrayBuilder.add(VPackValue(message.weight));
     arrayBuilder.close();

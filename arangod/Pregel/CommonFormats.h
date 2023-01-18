@@ -213,17 +213,17 @@ struct SenderMessageFormat : public MessageFormat<SenderMessage<T>> {
   SenderMessageFormat() = default;
   void unwrapValue(VPackSlice s, SenderMessage<T>& senderVal) const override {
     VPackArrayIterator array(s);
-    senderVal.senderId.shard =
-        PregelShard(static_cast<PregelShard::value_type>((*array).getUInt()));
-    senderVal.senderId.key = (*(++array)).copyString();
+    senderVal.senderId = VertexID(
+        PregelShard(static_cast<PregelShard::value_type>((*array).getUInt())),
+                    (*(++array)).copyString());
     senderVal.value = (*(++array)).getNumber<T>();
   }
   void addValue(VPackBuilder& arrayBuilder,
                 SenderMessage<T> const& senderVal) const override {
     arrayBuilder.openArray();
-    arrayBuilder.add(VPackValue(senderVal.senderId.shard));
-    arrayBuilder.add(VPackValuePair(senderVal.senderId.key.data(),
-                                    senderVal.senderId.key.size(),
+    arrayBuilder.add(VPackValue(senderVal.senderId.pregelShard()));
+    arrayBuilder.add(VPackValuePair(senderVal.senderId.key().data(),
+                                    senderVal.senderId.key().size(),
                                     VPackValueType::String));
     arrayBuilder.add(VPackValue(senderVal.value));
     arrayBuilder.close();
