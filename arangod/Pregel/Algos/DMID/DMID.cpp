@@ -335,15 +335,15 @@ struct DMIDComputation
       for (auto edges = getEdges(); edges.hasMore(); ++edges) {
         Edge<float>* edge = *edges;
 
-        if (edge->targetShard() == senderID.pregelShard() &&
-            edge->toKey() == senderID.key()) {
+        if (edge->targetShard() == senderID.shard &&
+            edge->toKey() == senderID.key) {
           hasEdgeToSender = true;
           /**
            * Has this vertex more influence on the sender than the
            * sender on this vertex?
            */
           float senderInfluence =
-              (float)vecLS->getAggregatedValue(senderID.pregelShard(), std::string(senderID.key()));
+              (float)vecLS->getAggregatedValue(senderID.shard, std::string(senderID.key));
           senderInfluence *= edge->data();
 
           if (myInfluence > senderInfluence) {
@@ -395,7 +395,7 @@ struct DMIDComputation
     VertexSumAggregator* vecFD =
         (VertexSumAggregator*)getWriteAggregator(FD_AGG);
     for (VertexID const& _id : leaderSet) {
-      vecFD->aggregate(_id.pregelShard(), std::string(_id.key()), leaderInit);
+      vecFD->aggregate(_id.shard, std::string(_id.key), leaderInit);
     }
   }
 
@@ -633,15 +633,15 @@ struct DMIDGraphFormat : public GraphFormat<DMIDValue, float> {
       if (communities.empty()) {
         b.add(_resultField, VPackSlice::nullSlice());
       } else if (_maxCommunities == 1) {
-        b.add(_resultField, VPackValuePair(communities[0].first.key().data(),
-                                           communities[0].first.key().size(),
+        b.add(_resultField, VPackValuePair(communities[0].first.key.data(),
+                                           communities[0].first.key.size(),
                                            VPackValueType::String));
       } else {
         // Output for DMID modularity calculator
         b.add(_resultField, VPackValue(VPackValueType::Array));
         for (auto const& pair : ptr->membershipDegree) {
           size_t i = arangodb::basics::StringUtils::uint64_trusted(
-              pair.first.key().data(), pair.first.key().size());
+              pair.first.key.data(), pair.first.key.size());
           b.openArray();
           b.add(VPackValue(i));
           b.add(VPackValue(pair.second));
@@ -736,7 +736,7 @@ struct DMIDMasterContext : public MasterContext {
         LOG_TOPIC("db510", INFO, Logger::PREGEL)
             << "Aggregator DA at step: " << globalSuperstep();
         convergedDA->forEach([&](VertexID const& _id, double entry) {
-          LOG_TOPIC("df98d", INFO, Logger::PREGEL) << _id.key();
+          LOG_TOPIC("df98d", INFO, Logger::PREGEL) << _id.key;
         });
       }
       if (globalSuperstep() == RW_ITERATIONBOUND + 6) {
@@ -744,7 +744,7 @@ struct DMIDMasterContext : public MasterContext {
             getAggregator<VertexSumAggregator>(LS_AGG);
         leadershipVector->forEach([&](VertexID const& _id, double entry) {
           LOG_TOPIC("c82d2", INFO, Logger::PREGEL)
-              << "Aggregator LS:" << _id.key();
+              << "Aggregator LS:" << _id.key;
         });
       }
     }
@@ -775,8 +775,8 @@ struct DMIDMasterContext : public MasterContext {
     /** set flag for globalLeader */
     vecFD->forEach([&](VertexID const& _id, double entry) {
       if (entry > averageFD) {
-        initGL->aggregate(_id.pregelShard(), std::string(_id.key()), 1.0);
-        LOG_TOPIC("a3665", INFO, Logger::PREGEL) << "Global Leader " << _id.key();
+        initGL->aggregate(_id.shard, std::string(_id.key), 1.0);
+        LOG_TOPIC("a3665", INFO, Logger::PREGEL) << "Global Leader " << _id.key;
       }
     });
     // setAggregatedValue(DMIDComputation.GL_AGG, initGL);

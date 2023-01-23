@@ -28,29 +28,27 @@
 namespace arangodb::pregel {
 
 struct VertexID {
-  VertexID() : _shard(InvalidPregelShard) {}
-  VertexID(PregelShard s, std::string k) : _key(std::move(k)), _shard(s) {}
+  VertexID() : shard(InvalidPregelShard) {}
+  VertexID(PregelShard s, std::string k) : key(std::move(k)), shard(s) {}
 
   bool operator==(const VertexID& rhs) const {
-    return _shard == rhs._shard && _key == rhs._key;
+    return shard == rhs.shard && key == rhs.key;
   }
 
   bool operator!=(const VertexID& rhs) const {
-    return _shard != rhs._shard || _key != rhs._key;
+    return shard != rhs.shard || key != rhs.key;
   }
 
   bool operator<(const VertexID& rhs) const {
-    return _shard < rhs._shard || (_shard == rhs._shard && _key < rhs._key);
+    return shard < rhs.shard || (shard == rhs.shard && key < rhs.key);
   }
 
   [[nodiscard]] bool isValid() const {
-    return _shard != InvalidPregelShard && !_key.empty();
+    return shard != InvalidPregelShard && !key.empty();
   }
 
-  [[nodiscard]] std::string_view key() const { return _key; }
-  [[nodiscard]] PregelShard pregelShard() const { return _shard; }
-  std::string _key;
-  PregelShard _shard;
+  std::string key;
+  PregelShard shard;
 };
 
 }  // namespace arangodb::pregel
@@ -64,8 +62,8 @@ struct hash<arangodb::pregel::VertexID> {
     // Compute individual hash values for first,
     // second and third and combine them using XOR
     // and bit shifting:
-    size_t h1 = std::hash<std::string_view>()(k.key());
-    size_t h2 = std::hash<arangodb::pregel::PregelShard>()(k.pregelShard());
+    size_t h1 = std::hash<std::string_view>()(k.key);
+    size_t h2 = std::hash<arangodb::pregel::PregelShard>()(k.shard);
     return h2 ^ (h1 << 1);
   }
 };
