@@ -215,7 +215,7 @@ struct SenderMessageFormat : public MessageFormat<SenderMessage<T>> {
     VPackArrayIterator array(s);
     senderVal.senderId = VertexID(
         PregelShard(static_cast<PregelShard::value_type>((*array).getUInt())),
-                    (*(++array)).copyString());
+        (*(++array)).copyString());
     senderVal.value = (*(++array)).getNumber<T>();
   }
   void addValue(VPackBuilder& arrayBuilder,
