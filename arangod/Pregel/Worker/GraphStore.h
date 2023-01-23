@@ -76,23 +76,6 @@ class GraphStore final {
   uint64_t numberVertexSegments() const { return _vertices.size(); }
   uint64_t localVertexCount() const { return _localVertexCount; }
   uint64_t localEdgeCount() const { return _localEdgeCount; }
-  auto allocatedSize() -> size_t {
-    auto total = size_t{0};
-
-    for (auto&& vb : _vertices) {
-      total += vb->capacity();
-    }
-    for (auto&& vb : _vertexKeys) {
-      total += vb->capacity();
-    }
-    for (auto&& vb : _edges) {
-      total += vb->capacity();
-    }
-    for (auto&& vb : _edgeKeys) {
-      total += vb->capacity();
-    }
-    return total;
-  }
 
   GraphStoreStatus status() const { return _observables.observe(); }
 
@@ -123,8 +106,6 @@ class GraphStore final {
                     std::function<void()> const& statusUpdateCallback);
   void loadEdges(transaction::Methods& trx, Vertex<V, E>& vertex,
                  ShardID const& edgeShard, std::string const& documentID,
-                 std::vector<std::unique_ptr<TypedBuffer<Edge<E>>>>& edges,
-                 std::vector<std::unique_ptr<TypedBuffer<char>>>& edgeKeys,
                  uint64_t numVertices, traverser::EdgeCollectionInfo& info);
 
   void storeVertices(std::vector<ShardID> const& globalShards,
@@ -153,10 +134,6 @@ class GraphStore final {
   /// Holds vertex keys, data and pointers to edges
   std::mutex _bufferMutex;
   std::vector<std::unique_ptr<TypedBuffer<Vertex<V, E>>>> _vertices;
-  std::vector<std::unique_ptr<TypedBuffer<char>>> _vertexKeys;
-  std::vector<std::unique_ptr<TypedBuffer<Edge<E>>>> _edges;
-  std::vector<TypedBuffer<Edge<E>>*> _nextEdgeBuffer;
-  std::vector<std::unique_ptr<TypedBuffer<char>>> _edgeKeys;
 
   GraphStoreObservables _observables;
 
