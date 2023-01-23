@@ -35,7 +35,8 @@ struct PregelShard {
   explicit constexpr PregelShard() : _value(InvalidPregelShardMarker) {}
   // TODO: This is for easier transition from older code
   // which just used to typedef PregelShard to be a uint16_t
-  [[deprecated]] explicit PregelShard(uint64_t value) : _value(static_cast<value_type>(value)) {}
+  [[deprecated]] explicit PregelShard(uint64_t value)
+      : _value(static_cast<value_type>(value)) {}
   explicit PregelShard(value_type value) : _value(value) {}
 
   static constexpr value_type InvalidPregelShardMarker =
