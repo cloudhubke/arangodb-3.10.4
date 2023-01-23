@@ -45,11 +45,11 @@ struct Edge {
   E _data;
 
   [[nodiscard]] std::string_view toKey() const {
-    return _to.key();
+    return _to.key;
   }
   E& data() noexcept { return _data; }
   [[nodiscard]] PregelShard targetShard() const noexcept {
-    return _to.pregelShard();
+    return _to.shard;
   }
 };
 

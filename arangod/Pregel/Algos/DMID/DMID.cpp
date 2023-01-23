@@ -331,8 +331,8 @@ struct DMIDComputation
       bool hasEdgeToSender = false;
 
       for (auto&& edge : getEdges()) {
-        if (edge.targetShard() == senderID.pregelShard() &&
-            edge.toKey() == senderID.key()) {
+        if (edge.targetShard() == senderID.shard &&
+            edge.toKey() == senderID.key) {
           hasEdgeToSender = true;
           /**
            * Has this vertex more influence on the sender than the
@@ -340,7 +340,7 @@ struct DMIDComputation
            */
           float senderInfluence = (float)vecLS->getAggregatedValue(
               senderID.shard, std::string(senderID.key));
-          senderInfluence *= edge->data();
+          senderInfluence *= edge.data();
 
           if (myInfluence > senderInfluence) {
             /** send new message */
