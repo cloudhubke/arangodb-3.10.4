@@ -342,8 +342,8 @@ struct DMIDComputation
            * Has this vertex more influence on the sender than the
            * sender on this vertex?
            */
-          float senderInfluence =
-              (float)vecLS->getAggregatedValue(senderID.shard, std::string(senderID.key));
+          float senderInfluence = (float)vecLS->getAggregatedValue(
+              senderID.shard, std::string(senderID.key));
           senderInfluence *= edge->data();
 
           if (myInfluence > senderInfluence) {
