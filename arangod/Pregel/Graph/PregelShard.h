@@ -32,7 +32,7 @@ namespace arangodb::pregel {
 struct PregelShard {
   using value_type = uint16_t;
 
-  explicit constexpr PregelShard() : _value(InvalidPregelShardMarker) {}
+  constexpr PregelShard() : _value(InvalidPregelShardMarker) {}
   // TODO: This is for easier transition from older code
   // which just used to typedef PregelShard to be a uint16_t
   [[deprecated]] explicit PregelShard(uint64_t value)
