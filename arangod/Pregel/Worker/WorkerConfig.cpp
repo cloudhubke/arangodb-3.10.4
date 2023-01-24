@@ -55,11 +55,10 @@ void WorkerConfig::updateConfig(PregelFeature& feature,
   // list of all shards, equal on all workers. Used to avoid storing strings of
   // shard names
   // Instead we have an index identifying a shard name in this vector
-  auto shardCounter = PregelShard::value_type{0};
-  for (VPackSlice shard : VPackArrayIterator(globalShards)) {
-    ShardID s = shard.copyString();
-    _globalShardIDs.push_back(s);
-    _pregelShardIDs.try_emplace(s, shardCounter++);  // Cache these ids
+  for (auto shardCounter = PregelShard::value_type{0};
+       auto const& shard : _globalShardIDs) {
+    _pregelShardIDs.try_emplace(
+        shard, PregelShard(shardCounter++));  // Cache these ids
   }
 
   // To access information based on a user defined collection name we need the
@@ -134,4 +133,3 @@ VertexID WorkerConfig::documentIdToPregel(std::string_view documentID) const {
   PregelShard source = this->shardId(responsibleShard);
   return VertexID(source, std::string(keyPart));
 }
- 

@@ -69,32 +69,6 @@ using namespace arangodb::pregel;
 #define LOG_PREGEL(logId, level) \
   LOG_TOPIC(logId, level, Logger::PREGEL) << "[job " << _executionNumber << "] "
 
-namespace {
-static constexpr size_t minStringChunkSize = 16 * 1024 * sizeof(char);
-static constexpr size_t maxStringChunkSize = 32 * 1024 * 1024 * sizeof(char);
-static constexpr size_t chunkUnit = 4 * 1024 * sizeof(char);
-
-static_assert(minStringChunkSize % chunkUnit == 0, "invalid chunkUnit value");
-static_assert(maxStringChunkSize % chunkUnit == 0, "invalid chunkUnit value");
-
-size_t stringChunkSize(size_t /*numberOfChunks*/, uint64_t numVerticesLeft,
-                       bool isVertex) {
-  // we assume a conservative 64 bytes per document key
-  size_t numBytes = numVerticesLeft * 64;
-  if (!isVertex) {
-    // assume 16 edges per vertex. this is an arbitrary estimate.
-    numBytes *= 16;
-  }
-  // round up to nearest multiple of chunkUnit (4096)
-  numBytes = ((numBytes - 1u) & ~(chunkUnit - 1u)) + chunkUnit;
-  numBytes = std::max<size_t>(minStringChunkSize, numBytes);
-  numBytes = std::min<size_t>(maxStringChunkSize, numBytes);
-
-  TRI_ASSERT(numBytes % chunkUnit == 0);
-  return numBytes;
-}
-}  // namespace
-
 template<typename V, typename E>
 GraphStore<V, E>::GraphStore(PregelFeature& feature, TRI_vocbase_t& vocbase,
                              ExecutionNumber executionNumber,
@@ -414,10 +388,6 @@ auto GraphStore<V, E>::loadVertices(
     SchedulerFeature::SCHEDULER->queue(RequestLane::INTERNAL_LOW,
                                        statusUpdateCallback);
   }
-
-  // we must not overflow the range we have been assigned to
-  TRI_ASSERT(vertexIdRange <= vertexIdRangeStart + numVerticesOriginal);
-
   LOG_PREGEL("6d389", DEBUG)
       << "Pregel worker: done loading from vertex shard " << vertexShard;
   return vertices;

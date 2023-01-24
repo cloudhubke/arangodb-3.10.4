@@ -101,9 +101,10 @@ class GraphStore final {
                     std::function<void()> const& statusUpdateCallback);
 
  private:
-  void loadVertices(ShardID const& vertexShard,
+  auto loadVertices(ShardID const& vertexShard,
                     std::vector<ShardID> const& edgeShards,
-                    std::function<void()> const& statusUpdateCallback);
+                    std::function<void()> const& statusUpdateCallback)
+      -> std::vector<Vertex<V, E>>;
   void loadEdges(transaction::Methods& trx, Vertex<V, E>& vertex,
                  ShardID const& edgeShard, std::string const& documentID,
                  uint64_t numVertices, traverser::EdgeCollectionInfo& info);
