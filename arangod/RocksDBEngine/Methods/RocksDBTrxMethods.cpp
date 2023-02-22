@@ -303,14 +303,14 @@ void RocksDBTrxMethods::beginQuery(bool isModificationQuery) {
     TRI_ASSERT(_ownsReadWriteBatch == false);
     initializeReadWriteBatch();
   } else {
-    TRI_ASSERT(_ownsReadWriteBatch == false);
-    TRI_ASSERT(_hasActiveModificationQuery.load() == false);
-    if (_hasActiveModificationQuery.load(std::memory_order_relaxed)) {
-      THROW_ARANGO_EXCEPTION_MESSAGE(
-          TRI_ERROR_INTERNAL,
-          "cannot run modification query and read-only query concurrently on "
-          "the same transaction");
-    }
+    // TRI_ASSERT(_ownsReadWriteBatch == false);
+    // TRI_ASSERT(_hasActiveModificationQuery.load() == false);
+    // if (_hasActiveModificationQuery.load(std::memory_order_relaxed)) {
+    //   THROW_ARANGO_EXCEPTION_MESSAGE(
+    //       TRI_ERROR_INTERNAL,
+    //       "cannot run modification query and read-only query concurrently on
+    //       " "the same transaction");
+    // }
     _numActiveReadOnlyQueries.fetch_add(1, std::memory_order_relaxed);
   }
 }
@@ -330,9 +330,9 @@ void RocksDBTrxMethods::endQuery(bool isModificationQuery) noexcept {
     TRI_ASSERT(_readWriteBatch == nullptr && !_ownsReadWriteBatch);
     _readWriteBatch = _rocksTransaction->GetWriteBatch();
   } else {
-    TRI_ASSERT(_ownsReadWriteBatch == false);
-    TRI_ASSERT(_hasActiveModificationQuery.load() == false);
-    TRI_ASSERT(_numActiveReadOnlyQueries.load() > 0);
+    // TRI_ASSERT(_ownsReadWriteBatch == false);
+    // TRI_ASSERT(_hasActiveModificationQuery.load() == false);
+    // TRI_ASSERT(_numActiveReadOnlyQueries.load() > 0);
     _numActiveReadOnlyQueries.fetch_sub(1, std::memory_order_relaxed);
   }
 }

@@ -281,6 +281,27 @@ class Methods {
                                           VPackSlice value,
                                           OperationOptions const& options);
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Added by Gaitho
+  //
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  std::shared_ptr<transaction::Context> getTransactionContext() const;
+  void getDocumentBy_id(std::string const& fieldLinks, std::string const& cname,
+                        std::string const& fieldName,
+                        std::string const& link_id);
+  void beforeSave(std::string const& cname, VPackSlice value,
+                  OperationOptions const& options);
+  void beforeRemove(std::string const& cname, VPackSlice value,
+                    OperationOptions const& options);
+  void beforeTruncate(std::string const& cname,
+                      OperationOptions const& options);
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // End OF GAITHO ADDITIONS
+  //
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /// @brief return one or multiple documents from a collection
   Future<OperationResult> documentAsync(std::string const& collectionName,
                                         VPackSlice value,
