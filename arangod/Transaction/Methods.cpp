@@ -1467,8 +1467,8 @@ void transaction::Methods::beforeRemove(std::string const& cname,
         "    LET type = schema.rule.properties[key].type" +
         "    RETURN type=='object'?CONCAT('(rec.', key, '._ref == \"" + _id +
         "\" " + "|| " + "NOT IS_NULL(rec.', key, '[\"" + _id +
-        "\"]))'): CONCAT('rec.', key, " + "'[*]._ref == \"" + _id +
-        "\"'))  FILTER LENGTH(properties) > 0" +
+        "\"]))'): CONCAT('\"" + _id +
+        "\" IN rec.', key, '[*]._ref'))  FILTER LENGTH(properties) > 0" +
         "    LET filterproperties = CONCAT_SEPARATOR(' || ', properties)" +
         "    LET aql = CONCAT('LET coll_', coll.name, ' = (FOR rec IN ', " +
         "coll.name, ' FILTER ', filterproperties, ' LIMIT 1 RETURN rec._id)')" +
